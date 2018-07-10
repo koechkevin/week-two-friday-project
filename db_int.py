@@ -1,15 +1,18 @@
-from flask import *
+from flask import json,jsonify,request,Flask
 import pymysql
 import datetime
+from dbmodel import *
 import jwt
 from functools import wraps   
+
+
 app=Flask(__name__)
 app.config['SECRET_KEY']="koech"
 
-          
 
 @app.route('/',methods=['GET'])
 def home():
+    create_tables()
     return jsonify({"message":"Please login to continue"})
 
 
@@ -20,11 +23,12 @@ def register():
     email=request.get_json()["email"]
     username=request.get_json()["username"]
     password=request.get_json()["password"]
-    timestamp=datetime.datetime.today().strftime('%Y%m%d%H%M%S')
+    timestamp=datetime.datetime.utcnow()
     try:
         connection = pymysql.connect(host='localhost',user='root',password='',db='andela')
         with connection.cursor() as cursor:
-            sql="INSERT INTO `users` (`Fname`, `Lname`, `Email`, `Username`, `Password`, `Timestamp`) VALUES ('"+fname+"', '"+lname+"', '"+email+"', '"+username+"','"+password+"', '"+timestamp+"');"
+            sql="INSERT INTO `users` (`Fname`, `Lname`, `Email`, `Username`, `Password`, `Timestamp`) VALUES ('"+fname+"', '"+lname+"', '"+email+"', '"+username+"','"+password+"', '"+str(timestamp)+"');"
+            cursor.execute("CREATE TABLE IF NOT EXISTS `users`  (  `ID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `Fname` varchar(32) NOT NULL,  `Lname` varchar(32) NOT NULL,  `Email` varchar(100) NOT NULL,`Username` varchar(50) NOT NULL,`Password` varchar(100) NOT NULL,  `Timestamp` int(14) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1;")
             try:
                 cursor.execute("SELECT * FROM `users` WHERE `username` LIKE '"+username+"'")
                 if cursor.fetchone() is not None:
@@ -49,7 +53,7 @@ def login():
         try:
             connection = pymysql.connect(host='localhost',user='root',password='',db='andela')
             with connection.cursor() as cursor1:
-                sql1="SELECT * FROM `admin` WHERE `Userame` LIKE '"+username+"' AND `Password` LIKE '"+password+"'"
+                sql1="SELECT * FROM `admin` WHERE `Username` LIKE '"+username+"' AND `Password` LIKE '"+password+"'"
                 try:
                     cursor1.execute(sql1)
                     result = cursor1.fetchall()
@@ -112,7 +116,7 @@ def authorizeUser(f):
             data=jwt.decode(request.args.get('token'), app.config['SECRET_KEY'])
             if data['user']=='admin':
                 return jsonify({"Alert":"utilize admin rights"})
-            userID.append(data['ID'])
+           # userID.append(data['ID'])
         except:
             return jsonify({"Alert":'please login again'})
         return f(*args,**kwargs)
@@ -255,4 +259,5 @@ def view_commentsByAdmin():
     return jsonify(output)    
   
 if __name__=='__main__':
+   
     app.run(port=5566,debug=True)    
