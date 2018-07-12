@@ -18,8 +18,8 @@ def home():
 
 @app.route('/register',methods=['POST'])
 def register():
-    fname=request.get_json()["Fname"]
-    lname=request.get_json()["Lname"]
+    fname=request.get_json()["fname"]
+    lname=request.get_json()["lname"]
     email=request.get_json()["email"]
     username=request.get_json()["username"]
     password=request.get_json()["password"]
@@ -28,7 +28,7 @@ def register():
         connection = pymysql.connect(host='localhost',user='root',password='',db='andela')
         with connection.cursor() as cursor:
             sql="INSERT INTO `users` (`Fname`, `Lname`, `Email`, `Username`, `Password`, `Timestamp`) VALUES ('"+fname+"', '"+lname+"', '"+email+"', '"+username+"','"+password+"', '"+str(timestamp)+"');"
-            cursor.execute("CREATE TABLE IF NOT EXISTS `users`  (  `ID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `Fname` varchar(32) NOT NULL,  `Lname` varchar(32) NOT NULL,  `Email` varchar(100) NOT NULL,`Username` varchar(50) NOT NULL,`Password` varchar(100) NOT NULL,  `Timestamp` int(14) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1;")
+            #cursor.execute("CREATE TABLE IF NOT EXISTS `users`  (  `ID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `Fname` varchar(32) NOT NULL,  `Lname` varchar(32) NOT NULL,  `Email` varchar(100) NOT NULL,`Username` varchar(50) NOT NULL,`Password` varchar(100) NOT NULL,  `Timestamp` int(14) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1;")
             try:
                 cursor.execute("SELECT * FROM `users` WHERE `username` LIKE '"+username+"'")
                 if cursor.fetchone() is not None:
@@ -259,5 +259,4 @@ def view_commentsByAdmin():
     return jsonify(output)    
   
 if __name__=='__main__':
-   
     app.run(port=5566,debug=True)    
