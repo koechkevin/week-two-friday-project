@@ -9,15 +9,22 @@ app.config['SECRET_KEY']="koech"
 connection=psycopg2.connect(dbname='first', user='postgres', host='localhost', password='01071992',port="5432")
 def createTables():
     cursor=connection.cursor()
-    cursor.execute("CREATE TABLE admin(AdminID SERIAL PRIMARY KEY,Username VARCHAR NOT NULL,Password VARCHAR NOT NULL);")
-    cursor.execute("CREATE TABLE comments (commentID SERIAL PRIMARY KEY,  comment TEXT NOT NULL,  Time TIMESTAMP default current_timestamp, ID INT NOT NULL);")
-    cursor.execute("CREATE TABLE users  (ID SERIAL PRIMARY KEY, fname VARCHAR NOT NULL, lname VARCHAR NOT NULL, email VARCHAR NOT NULL,Username VARCHAR NOT NULL,password VARCHAR NOT NULL,  timestamp TIMESTAMP default current_timestamp);")
-    cursor.execute("INSERT INTO admin (adminid,username,password) VALUES (1, 'admin', 'admin');")
-    connection.commit()
+    cursor.execute("CREATE TABLE IF NOT EXISTS admin(AdminID SERIAL PRIMARY KEY,Username VARCHAR NOT NULL,Password VARCHAR NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS comments (commentID SERIAL PRIMARY KEY,  comment TEXT NOT NULL,  Time TIMESTAMP default current_timestamp, ID INT NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS users  (ID SERIAL PRIMARY KEY, fname VARCHAR NOT NULL, lname VARCHAR NOT NULL, email VARCHAR NOT NULL,Username VARCHAR NOT NULL,password VARCHAR NOT NULL,  timestamp TIMESTAMP default current_timestamp);")
     
+    connection.commit()
+def adminRegistration():
+    cursor=connection.cursor()
+    cursor.execute('SELECT * FROM admin;')
+    if cursor.fetchone() is not None:
+        pass
+    else:
+        cursor.execute("INSERT INTO admin (adminid,username,password) VALUES (1, 'admin', 'admin');")
 @app.route('/',methods=['GET'])
 def home():
     createTables()
+    adminRegistration()
     return jsonify({"message":"Please login to continue"})
 
 @app.route('/register',methods=['POST'])
@@ -178,4 +185,3 @@ if __name__=='__main__':
 
 
 
-    
